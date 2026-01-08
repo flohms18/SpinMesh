@@ -1,21 +1,23 @@
-from fastapi import FastAPI,HTTPException
+from fastapi import FastAPI, HTTPException
 import httpx
-from registry import DATA_PRODUCTS, list_data_products, get_product_url
+from registry import list_data_products, get_product_url
 
 app = FastAPI(title="SpinMesh")
 
-app.get('/products')
-def products():
-    return {
-        'products': list_data_products
-    }
 
+@app.get("/products")
+def products():
+    return {"products": list_data_products()}
+
+
+@app.get("/products/{product_name}")
 def fetch_product(product_name: str):
     url = get_product_url(product_name)
     if not url:
         raise HTTPException(status_code=404, detail="Data Product not found")
+
     try:
-        response = httpx.get(url,timeout=5)
+        response = httpx.get(url, timeout=5)
         response.raise_for_status()
         return response.json()
     except httpx.HTTPError as e:
